@@ -34,6 +34,7 @@ class UserListView(generics.ListAPIView):
     serializer_class = UserListSerializer
     
 
+
 class RootView(APIView):
     def get(self, request):
         return Response ({"Message": "Api is up and running."}, status=status.HTTP_200_OK)
