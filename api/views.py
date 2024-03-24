@@ -7,7 +7,15 @@ from .serializers import UserSerializer, UserListSerializer
 from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
 from .models import User
+from django.shortcuts import get_object_or_404
+from django.contrib.auth import get_user_model
+from rest_framework.parsers import JSONParser
+from django.http import JsonResponse
+import logging
 
+logger = logging.getLogger(__name__)
+
+User = get_user_model()
 
 class SignupAPIView(APIView):
     def post(self, request):
@@ -40,4 +48,12 @@ class RootView(APIView):
         return Response ({"Message": "Api is up and running."}, status=status.HTTP_200_OK)
     
 
-# Create your views here.
+
+class DeleteUserView(APIView):
+    def delete(self, request, user_id):
+        user = User.objects.filter(pk=user_id).first()
+        if user is None:
+            return JsonResponse({'error': 'User not found'}, status=404)
+        
+        user.delete()
+        return JsonResponse({'message': 'User deleted successfully'}, status=204)
