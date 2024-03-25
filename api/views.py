@@ -9,6 +9,7 @@ from rest_framework.authtoken.models import Token
 from .models import User
 from django.contrib.auth import get_user_model
 from django.http import JsonResponse
+from django.db import IntegrityError
 from rest_framework.exceptions import ValidationError
 import logging
 
@@ -19,10 +20,19 @@ User = get_user_model()
 class SignupAPIView(APIView):
     def post(self, request):
         serializer = UserSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save()
-            token, _ = Token.objects.get_or_create(user=user)
-            return Response({'token': token.key}, status=status.HTTP_201_CREATED)
+        try:
+            if serializer.is_valid():
+                user = serializer.save()
+                token, _ = Token.objects.get_or_create(user=user)
+                return Response({'token': token.key}, status=status.HTTP_201_CREATED)
+        except IntegrityError as e:
+            # Check for specific constraint violations
+            if 'username' in str(e):  # Username constraint violation
+                return Response({'error': 'Username already exists. Choose a different username.'}, status=status.HTTP_400_BAD_REQUEST)
+            elif 'email' in str(e):  # Email constraint violation
+                return Response({'error': 'Email already exists. Use a different email address.'}, status=status.HTTP_400_BAD_REQUEST)
+            else:  # Unidentified constraint violation (optional)
+                return Response({'error': 'An error occurred during registration. Please try again later.'}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class LoginAPIView(APIView):
