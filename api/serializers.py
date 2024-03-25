@@ -27,3 +27,10 @@ class UserListSerializer(serializers.ModelSerializer):
         model = User
         fields = ('id', 'username', 'email', 'date_joined')
         
+class BlockUserSerializer(serializers.Serializer):
+    email = serializers.EmailField(required= True)
+    
+class UnblockUserSerializer(serializers.Serializer):
+    email = serializers.EmailField(required= True)
+    
+        

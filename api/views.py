@@ -3,14 +3,13 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import generics
-from .serializers import UserSerializer, UserListSerializer
+from .serializers import UserSerializer, UserListSerializer, BlockUserSerializer, UnblockUserSerializer
 from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
 from .models import User
-from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
-from rest_framework.parsers import JSONParser
 from django.http import JsonResponse
+from rest_framework.exceptions import ValidationError
 import logging
 
 logger = logging.getLogger(__name__)
@@ -32,6 +31,8 @@ class LoginAPIView(APIView):
         password = request.data.get('password')
         user = authenticate(username=username, password=password)
         if user:
+            if user.is_blocked:
+                return Response({'error': 'User is blocked. Please contact administrator.'}, status=status.HTTP_403_FORBIDDEN)
             token, _ = Token.objects.get_or_create(user=user)
             return Response({'token': token.key})
         return Response({'error': 'Invalid Credentials'}, status=status.HTTP_400_BAD_REQUEST)
@@ -57,3 +58,38 @@ class DeleteUserView(APIView):
         
         user.delete()
         return JsonResponse({'message': 'User deleted successfully'}, status=204)
+    
+    
+class BlockUserView(APIView):
+    def post(self, request):
+        serializer = BlockUserSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        email = serializer.validated_data['email']
+
+        try:
+            user_to_block = User.objects.get(email=email)
+            if user_to_block.is_blocked:
+                raise ValidationError("User with this email is already blocked.")
+            user_to_block.is_blocked = True
+            user_to_block.save()
+            return Response({"Message": "User blocked successfully."})
+        except User.DoesNotExist:
+            raise ValidationError("User with this email does not exist.")
+
+class UnblockUserView(APIView):
+    def post(self, request):
+        serializer = UnblockUserSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        email = serializer.validated_data['email']
+
+        try:
+            user_to_unblock = User.objects.get(email=email)
+            if not user_to_unblock.is_blocked:
+                raise ValidationError("User with this email is not blocked.")
+            user_to_unblock.is_blocked = False
+            user_to_unblock.save()
+            return Response({"message": "User unblocked successfully."})
+        except User.DoesNotExist:
+            raise ValidationError("User with this email does not exist.")
