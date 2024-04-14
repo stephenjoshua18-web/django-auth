@@ -170,5 +170,8 @@ class ListBlockedUsersAPIView(APIView):
     def get(self, request):
         # Filter blocked users based on the is_blocked field
         blocked_users = get_user_model().objects.filter(is_blocked=True)
-        serializer = UserSerializer(blocked_users, many=True)  # Replace with your User Serializer
-        return Response(serializer.data)
+        serializer = UserSerializer(blocked_users, many=True) 
+        # Replace with your User Serializer
+        if blocked_users:
+            return Response(serializer.data)
+        return Response({"There are no blocked users"})
