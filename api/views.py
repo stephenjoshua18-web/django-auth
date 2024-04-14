@@ -11,7 +11,7 @@ from django.contrib.auth import get_user_model
 from django.http import JsonResponse
 from django.db import IntegrityError
 import pytz
-from datetime import datetime, timedelta
+from datetime import timedelta
 from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken
 import logging
