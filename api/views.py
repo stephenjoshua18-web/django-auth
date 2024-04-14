@@ -12,7 +12,6 @@ from django.http import JsonResponse
 from django.db import IntegrityError
 from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.core.exceptions import ImproperlyConfigured
 import logging
 
 logger = logging.getLogger(__name__)
