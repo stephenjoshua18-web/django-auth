@@ -10,6 +10,8 @@ from .models import User
 from django.contrib.auth import get_user_model
 from django.http import JsonResponse
 from django.db import IntegrityError
+import pytz
+from datetime import datetime, timedelta
 from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken
 import logging
@@ -79,6 +81,8 @@ class SignupAPIView(APIView):
 
 #login api view using jwt authentication
 class LoginAPIView(APIView):
+    token_expire_minutes = 15  # Set access token expiration to 15 minutes
+
     def post(self, request):
         username = request.data.get('username')
         password = request.data.get('password')
@@ -93,11 +97,13 @@ class LoginAPIView(APIView):
             # Check if user is blocked before generating token
             if user.is_blocked:
                 return Response({'error': 'User is blocked. Please contact support.'}, status=status.HTTP_403_FORBIDDEN)
-            refresh = RefreshToken.for_user(user)
-            return Response({
-                'access': str(refresh.access_token),
-                'refresh': str(refresh),  # Include the entire refresh token string
-            }, status=status.HTTP_200_OK)
+
+            # Set expiration time for access token
+            access_token = RefreshToken.for_user(user)
+            access_token.set_exp(lifetime=timedelta(minutes=self.token_expire_minutes))
+
+
+            return Response({'access': str(access_token)}, status=status.HTTP_200_OK)
         return Response({'error': 'Invalid Credentials'}, status=status.HTTP_400_BAD_REQUEST)
 
 class UserListView(generics.ListAPIView):
