@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'api',
     'rest_framework.authtoken',
+    'rest_framework_simplejwt',
     'rest_framework',
     'corsheaders',
 ]
@@ -122,12 +123,15 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',  # For token authentication
-        # 'rest_framework_simplejwt.authentication.JWTAuthentication',  # For JWT authentication
+        # 'rest_framework.authentication.TokenAuthentication',  # For token authentication
+        'rest_framework_simplejwt.authentication.JWTAuthentication',  # For JWT authentication
     ],
     # ... other settings ...
 }
-
+SIMPLE_JWT = {
+    'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+}
 
 
 # Internationalization

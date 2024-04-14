@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
+from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.password_validation import validate_password
 from . import models
 
@@ -21,6 +22,17 @@ class UserSerializer(serializers.ModelSerializer):
             password=validated_data['password']
         )
         return user
+    
+class TokenSerializer(serializers.Serializer):
+    access = serializers.CharField()
+    refresh = serializers.CharField()
+
+    def validate(self, attrs):
+        token = RefreshToken.for_user(attrs['user'])
+        return {
+            'access': str(token.access_token),
+            'refresh': str(token.refresh_token),
+        }
 
 class UserListSerializer(serializers.ModelSerializer):
     class Meta:
