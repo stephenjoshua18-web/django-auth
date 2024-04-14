@@ -157,4 +157,13 @@ class UnblockUserView(APIView):
         except User.DoesNotExist:
             raise ValidationError("User with this email does not exist.")
         
-        
+
+class ListBlockedUsersAPIView(APIView):
+    # Optional: Permission class to restrict access (replace with your logic)
+    # permission_classes = [IsAdminUser]  # Example permission class
+
+    def get(self, request):
+        # Filter blocked users based on the is_blocked field
+        blocked_users = get_user_model().objects.filter(is_blocked=True)
+        serializer = UserSerializer(blocked_users, many=True)  # Replace with your User Serializer
+        return Response(serializer.data)
