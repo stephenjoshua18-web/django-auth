@@ -81,7 +81,7 @@ class LoginAPIView(APIView):
 
 #login api view using jwt authentication
 class LoginAPIView(APIView):
-    token_expire_minutes = 15  # Set access token expiration to 15 minutes
+    token_expire_minutes = 1  # Set access token expiration to 1 minutes
 
     def post(self, request):
         username = request.data.get('username')
@@ -173,5 +173,5 @@ class ListBlockedUsersAPIView(APIView):
         serializer = UserSerializer(blocked_users, many=True) 
         # Replace with your User Serializer
         if blocked_users:
-            return Response(serializer.data)
-        return Response({"There are no blocked users"})
+            return Response((serializer.data), status=status.HTTP_302_FOUND)
+        return Response({"There are no blocked users"}, status=status.HTTP_204_NO_CONTENT)
